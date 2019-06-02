@@ -1,0 +1,346 @@
+<html>
+<head>
+<title>Computer Vision Project</title>
+<link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" title="Default" href="styles/github.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>  
+
+<link rel="stylesheet" href="highlighting/styles/default.css">
+<script src="highlighting/highlight.pack.js"></script>
+
+<style type="text/css">
+body {
+	margin: 0px;
+	width: 100%;
+	font-family: 'Crimson Text', serif;
+	font-size: 20px;
+	background: #fcfcfc;
+}
+h1 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 28px;
+	margin: 25px 0px 0px 0px;
+	text-transform: lowercase;
+
+}
+
+h2 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 32px;
+	margin: 15px 0px 35px 0px;
+	color: #333;	
+	word-spacing: 3px;
+}
+
+h3 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 26px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+h4 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+
+h5 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 18px;
+	margin: 10px 0px 10px 0px;
+	color: #111;
+	word-spacing: 2px;
+}
+
+p, li {
+	color: #444;
+}
+
+a {
+	color: #DE3737;
+}
+
+.container {
+	margin: 0px auto 0px auto;
+	width: 960px;
+}
+
+#header {
+	background: #333;
+	width: 100%;
+}
+
+#headersub {
+	color: #ccc;
+	width: 960px;
+	margin: 0px auto 0px auto;
+	padding: 20px 0px 20px 0px;
+}
+
+.chart {
+	width: 480px;
+}
+.lol {
+	font-size: 16px;
+	color: #888;
+	font-style: italic;
+}
+.sep {
+	height: 1px;
+	width: 100%;
+	background: #999;
+	margin: 20px 0px 20px 0px;
+}
+.footer{
+	font-size: 16px;
+}
+.latex {
+	width: 100%;
+}
+
+.latex img {
+	display: block;
+	margin: 0px auto 0px auto;
+}
+
+pre {
+	font-family: 'Droid Sans Mono';
+	font-size: 14px;
+}
+
+td img {
+  vertical-align: middle;
+}
+
+#contents a {
+}
+</style>
+<script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+</script>
+</head>
+<body>
+<div id="header" >
+<div id="headersub">
+<h1><span style="color: #DE3737">Kun Cao</span></h1>
+</div>
+</div>
+<div class="container">
+
+<h2>Project 1: Image Filtering and Hybrid Images</h2>
+
+<div style="float: right; padding: 20px">
+<img src="images/hybrid_image.jpg" />
+<p style="font-size: 14px">Example of a hybrid image.</p>
+</div>
+
+<p> 	The  purpose of this project is to implement a dynamic filter function in python
+that is able to apply any odd dimensional filter to an image. Furthermore, the filter function will be used
+to assist in the creation of hybrid images. The outline of this report will be provided here:</p>
+
+<ol>
+<li>Image Filtering</li>
+<li>Hybrid Images</li>
+<li>Conclusion & Extra Credit</li>
+</ol>
+
+
+<div style="clear:both">
+<h3>Part 1: Image Filtering</h3>
+
+<p>    In Part 1, the purpose was to create a python def called my_imfilter() which takes in images and a filter
+in numpy nd-array format. The filtering algorithm uses linear filtering, which utilizes a process of
+'sliding' through a padded image with window sizes that match the dimensions of the filter. Subsequently, by multiplying
+the 'window' with the filter and summing all the values, we are able to get a new index value for the filtered
+image. </p>
+
+<div style="float: bottom; padding: 20px">
+<img src="images/textbook.jpg" />
+
+
+<h4> Step 1: Padding<h4>
+
+<p> Before we are able to apply the filter, we have to pad the image with 0's in excess of the filter's distance
+from its center for the row side and column side. </p>
+
+<pre><code>
+#creating a padded zero matrix of the original image
+  f_row = len(filter)
+  f_col = len(filter[0])
+  pad_row = (int)(f_row/2)
+  pad_col = (int)(f_col/2)
+  padded_shape = (2*pad_row + im_row, 2*pad_col + im_column, im_z)
+  padded_image = np.zeros(padded_shape)
+</code></pre>
+
+<h4> Step 2: Applying the Neighborhood Filtering Algorithm </h4>
+<p> Next, the 'sliding' window method is implemented where each window is multiplied by the filter and summed
+to produce a resulting value for the final filtered image.</p>
+
+<pre><code>
+#neighborhood filtering
+  for x in range(0, len(filtered_image)):
+      for y in range(0, len(filtered_image[0])):
+          for z in range(0, len(filtered_image[0][0])):
+              filtered_image[x][y][z] = np.sum(padded_image
+                            [x:x+f_row, y:y+f_col,z]*filter)
+
+</code></pre>
+
+<h4> Step 3: The Result </h4>
+<p>Using my_imfilter(), the result of a low frequency version of the original image was returned.</p>
+
+
+<table border=0>
+<tr>
+<td>
+<img src="images/dog.bmp"  width="50%"/>
+<img src="images/low_frequencies.jpg" width="50%"/>
+
+</td>
+</tr>
+</table>
+
+
+
+
+
+<div style="clear:both">
+<h3>Part 2: Hybrid Images </h3>
+<p>
+	The Hybrid Image is the resultant of a low frequency image added with a high frequency image. To obtain the
+	low frequency image, use the my_imfilter() created in part 1. To obtain a high frequency image, subtract the
+	low frequency image to the original image.
+</p>
+
+<pre><code>
+#obtaining a hybrid_image
+  low_frequencies = my_imfilter(image1,filter)
+  high_frequencies = image2 - my_imfilter(image2, filter)
+  hybrid_image = low_frequencies + high_frequencies
+
+</code></pre>
+
+<h3>Results</h3>
+
+<table border=1>
+<tr>
+<td>
+<img src="images/low_frequencies.jpg" width="33%"/>
+<img src="images/high_frequencies.jpg"  width="33%"/>
+<img src="images/hybrid_image.jpg" width="33%"/>
+</td>
+</tr>
+
+<tr>
+<td>
+<img src="images/hybrid_image_scales.jpg" width="100%"/>
+</td>
+</tr>
+
+</table>
+
+<h3>Additional Results </h3>
+
+<table border=1>
+<tr>
+<td>
+<img src="images/bicycleMotorcycle_hybrid.jpg" width="22%"/>
+<img src="images/birdplane_hybrid.jpg"  width="22%"/>
+<img src="images/fishSubmarine_hybrid.jpg" width="22%"/>
+<img src="images/hybrid_einstein.jpg" width="22%"/>
+</td>
+</tr>
+
+<tr>
+<td>
+<img src="images/bicycleMotorcycle_scales.jpg" width="100%"/>
+</td>
+</tr>
+
+<tr>
+<td>
+<img src="images/birdplane_scales.jpg" width="100%"/>
+</td>
+</tr>
+
+<tr>
+<td>
+<img src="images/fishSubmarine_scales.jpg" width="100%"/>
+</td>
+</tr>
+
+<tr>
+<td>
+<img src="images/marilynEinstein_scales.jpg" width="100%"/>
+</td>
+</tr>
+
+</table>
+
+<h3>Part 3: Conclusion & Extra Credit</h3>
+
+<p>
+	What I noticed doing Experiment 1 is that the image with the natural lower frequency needs to be the low
+	frequency image while constructing the hybrid image for the best effect. Furthermore, 
+	maintaining the cutoff frequency at 7 seems to yield the best results as well. When increasing 
+	the cutoff frequency, the blurry image became too convoluted. This did not produce a good effect in the
+	scaled image because the blurred picture was not apparent in the smaller frames. By decreasing the cutoff frequency, the 'blurry' image was less 'blurred' which resulted the low frequency image to be too dominant in the larger images of the 
+	scaled results. 
+
+	For my extra credit, I combined the image of the leaning tower of Pisa to the Eiffel tower. At first
+	I used the the Pisa as the high frequency image and the Eiffel as the low frequency image. However,
+	In the larger scale, the Pisa did not appear to be very clear and looked transparent. 
+</p>
+
+<table border=1>
+<tr>
+<td>
+<img src="images/pisa2.jpg" width="33%"/>
+<img src="images/eiffel2.jpg"  width="33%"/>
+<img src="images/eiffelPisa_hybrid.jpg" width="33%"/>
+</td>
+</tr>
+
+<tr>
+<td>
+<img src="images/eiffelPisa_scales2.jpg" width="100%"/>
+</td>
+</tr>
+
+</table>
+
+<p>
+	By switching the images I think the hybrid turned out better mainly because the Eiffel high frequency image
+	was much more defined than the Pisa high frequency image. 
+</p>
+
+<table border=1>
+<tr>
+<td>
+<img src="images/pisa.jpg" width="33%"/>
+<img src="images/eiffel.jpg"  width="33%"/>
+<img src="images/eiffelPisa_hybrid.jpg" width="33%"/>
+</td>
+</tr>
+
+<tr>
+<td>
+<img src="images/eiffelPisa_scales.jpg" width="100%"/>
+</td>
+</tr>
+
+</table>
+
+
+</div>
+</body>
+</html>

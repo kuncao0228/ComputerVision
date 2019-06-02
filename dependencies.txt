@@ -1,0 +1,6 @@
+conda install nb_conda (Changin Kernels between JupyterNotebooks)
+conda install cv
+
+conda install -c menpo opencv
+pip install opencv-python==3.4.2.16
+pip install opencv-contrib-python==3.4.2.16

@@ -1,0 +1,284 @@
+<html>
+<head>
+<title>Computer Vision Project</title>
+<link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" title="Default" href="styles/github.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>  
+
+<link rel="stylesheet" href="highlighting/styles/default.css">
+<script src="highlighting/highlight.pack.js"></script>
+
+<style type="text/css">
+body {
+	margin: 0px;
+	width: 100%;
+	font-family: 'Crimson Text', serif;
+	font-size: 20px;
+	background: #fcfcfc;
+}
+h1 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 28px;
+	margin: 25px 0px 0px 0px;
+	text-transform: lowercase;
+
+}
+
+h2 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 32px;
+	margin: 15px 0px 35px 0px;
+	color: #333;	
+	word-spacing: 3px;
+}
+
+h3 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 26px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+h4 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+
+h5 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 18px;
+	margin: 10px 0px 10px 0px;
+	color: #111;
+	word-spacing: 2px;
+}
+
+p, li {
+	color: #444;
+}
+
+a {
+	color: #DE3737;
+}
+
+.container {
+	margin: 0px auto 0px auto;
+	width: 960px;
+}
+
+#header {
+	background: #333;
+	width: 100%;
+}
+
+#headersub {
+	color: #ccc;
+	width: 960px;
+	margin: 0px auto 0px auto;
+	padding: 20px 0px 20px 0px;
+}
+
+.chart {
+	width: 480px;
+}
+.lol { 
+	font-size: 16px;
+	color: #888;
+	font-style: italic;
+}
+.sep {
+	height: 1px;
+	width: 100%;
+	background: #999;
+	margin: 20px 0px 20px 0px;
+}
+.footer{
+	font-size: 16px;
+}
+.latex {
+	width: 100%;
+}
+
+.latex img {
+	display: block;
+	margin: 0px auto 0px auto;
+}
+
+pre {
+	font-family: 'Droid Sans Mono';
+	font-size: 14px;
+}
+
+td img {
+  vertical-align: middle;
+}
+
+#contents a {
+}
+</style>
+<script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+</script>
+</head>
+<body>
+<div id="header" >
+<div id="headersub">
+<h1><span style="color: #DE3737">Kun Cao</span></h1>
+</div>
+</div>
+<div class="container">
+
+<h2>Project 2: Local Feature Matching</h2>
+
+<div style="float: right; padding: 20px">
+
+</div>
+
+<p> 	For this project I demonstrated feature matching through a set of
+feature interest points that was discovered by a Harris Edge Detector. I was able to compare accuracies between
+using just feature matching, using SIFT with feature matching, and combining the Harris edge detector. Furthermore
+I was also able to determine changes in accuracy by using larger SIFT windows, different Harris windows, different
+Gaussians, and different alpha values when computing Harris Values.
+</p>
+
+<ol>
+<li>Get Features/Match Features</li>
+<li>Harris Detector</li>
+<li>Conclusion & Extra Credit</li>
+</ol>
+
+
+<div style="clear:both">
+<h3>Get Features/ Match Features</h3>
+
+<p> 	I started out by using cheat_interest_points() to code out my SIFT and my_match_features() algorithm.
+For the SIFT method I essentially iterated through all the pairs of (x,y) interest points and found 16x16 
+windows that centered these interest points. Subsequentily, I broke each of these windows down to 4x4 blocks
+and sorted these pixels based on direction using the gradients of the image. These directions are then sorted into
+a histogram bin by their respective magnitudes. Ultimately, after appending all the 4x4 histogram arrays together
+we are left with a size (k, 128) array where k is the number of features. 128 is (16/4)^2 * 8 where 16 is the size
+of the window around the interest points, 4 is the 4x4 matrix</p>
+
+<p>		Next I implemented match_features(). Which is essentially a double for loop where I am
+comparing the distance between the normalized array of one feature to another. Ultimately, the
+2 arrays that have the smallest distance are matched and a confidence interval is determined
+using the nearest neighbor ratio. Finally, all matched elements are sorted my highest confidence.</p>
+
+
+
+
+<div style="clear:both">
+<h3>Harris Detector</h3>
+
+<p> 	For the Harris Detector, I first computed gradient x and gradient y of the image using np.gradient(). Next
+I implemented the following equations with a Gaussian with the cutoff frequency of 12 and an alpha of .4. My window
+size I used for Harris was originally 40 with a slide of 10 which was not enough and did not give me a good accuracy.
+By decreasing the window size to 30 and decreasing the slide to 8, I was able to get much more interest points
+which increased my top 100 matches' accuracy from 78% to 86% on my final result.</p>
+
+<div style="float: center; padding: 20px">
+<img src="matrix.jpg" />
+<img src="trace.jpg" />
+
+<p> After implementing the Harris Detector, I was able to visualize the following image:</p>
+<div style="float: center; padding: 20px">
+<img src="harrisImage.png" />
+<img src="" />
+
+<p> The key takeaway from this image was that a lot of the features were very clumped together especially around the center.
+To fix this, I implemented Adaptive Non-Maximal supression which evens out the features a bit more
+by taking in acount distance from the previous interest point and then performing a sort. The visualization image
+I got after implementing Adaptive Non-Maxmimal supression is the following:</p>
+
+<img src="ANMSimage.png" />
+
+<p> Because each interest point was scaled by their distance preceding the previous interest point, the interest points
+in this picture are much more spaced out.</p>
+
+
+
+<h2>Conclusion & Extra Credit</h2>
+
+<p>The final results using Harris edge points, ANMS, SIFT and feature matching are demonstrated below. 
+The final accuracy achieved was 86% for Notre Dame, 65% for Mount Rushmore, and 10% for Episcopal Gaudi.
+This was a huge improvement from using just the cheat interest points. To get the 86% accuracy for 
+Notre Dame, I had to fine tune the Gaussian size because it was too large when I first
+started. I also had to increase n from 1500 to 1800 to get more interest points from the
+Harris edge detector.  Using the interest points,
+only a 66% accuracy was found for Notre Dame, a 40% for Mount Rushmore, however Episocopal Gaudi
+was slightly increased to 17%. I think the Episcopal Gaudi decreased in accuracy mainly because
+Harris Edge detection is poor for finding edges with pictures of different scaling. So when n was increased
+to 1500 rather than just using the 100 cheat interest points, accuracy decreased during the feature
+matching process.</p>
+
+
+<h3>Final Results</h3>
+
+<table border=1>
+<tr>
+<td>
+<img src="image1InterestPoints.png" width="50%"/>
+<img src="image1Final.png"  width="50%"/>
+</td>
+</tr>
+
+<table border=1>
+<tr>
+<td>
+<img src="image2InterestPoints.png" width="50%"/>
+<img src="image2Final.png"  width="50%"/>
+</td>
+</tr>
+
+<table border=1>
+<tr>
+<td>
+<img src="image3InterestPoints.png" width="50%"/>
+<img src="image3Final.png"  width="50%"/>
+</td>
+</tr>
+
+</table>
+
+<div style="clear:both" >
+<p> For Extra Credit I demonstrated the SIFT algorithm with multiple window widths. As a control, I used
+cheat interest points to see how much accuracy can be improved with no Harris edge detection and AMNS.
+I tested window feature sizes of 16, 28, 36, and 40. The accuracy results were</p>
+
+
+<table border=1>
+<tr>
+<td>
+<img src="67.png" width="40%"/>
+<img src="71.png" width="40%"/>
+<img src="75.png"  width="40%"/>
+<img src="76.png"  width="40%"/>
+</td>
+</tr>
+
+<table border=1>
+<tr>
+<td>
+<img src="rushmore1.jpg" width="40%"/>
+<img src="rushmore2.jpg" width="40%"/>
+<img src="rushmore3.jpg" width="40%"/>
+<img src="rushmore4.jpg" width="40%"/>
+</td>
+</tr>
+
+<p> I think there is definitely a correlation between higher feature window sizes and a better accuracy. However
+I think there will be a point where the feature width will no longer improve accuracy. This became evident in the rushmore 
+sets. Again for feature sizes 16, 28, 36, and 40 the accuracies received were .37 .53, .64, .63. Jumping from 16 to 28
+seems to have increased the accuracy of this image greatly.</p>
+
+</table>
+</div>
+</body>
+</html>

@@ -1,0 +1,2 @@
+-Run the project subsequently through jupyter notebook proj3.ipynb
+-Part 3 RANSAC uses 2000 iterations which takes roughly 1minute and 10 seconds to run

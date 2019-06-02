@@ -1,0 +1,380 @@
+<html>
+<head>
+<title>Computer Vision Project</title>
+<link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" title="Default" href="styles/github.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+
+<link rel="stylesheet" href="highlighting/styles/default.css">
+<script src="highlighting/highlight.pack.js"></script>
+
+<style type="text/css">
+body {
+	margin: 0px;
+	width: 100%;
+	font-family: 'Crimson Text', serif;
+	font-size: 20px;
+	background: #fcfcfc;
+}
+h1 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 28px;
+	margin: 25px 0px 0px 0px;
+	text-transform: lowercase;
+
+}
+
+h2 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 32px;
+	margin: 15px 0px 35px 0px;
+	color: #333;
+	word-spacing: 3px;
+}
+
+h3 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 26px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+h4 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+
+h5 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 18px;
+	margin: 10px 0px 10px 0px;
+	color: #111;
+	word-spacing: 2px;
+}
+
+p, li {
+	color: #444;
+}
+
+a {
+	color: #DE3737;
+}
+
+.container {
+	margin: 0px auto 0px auto;
+	width: 1160px;
+}
+
+#header {
+	background: #333;
+	width: 100%;
+}
+
+#headersub {
+	color: #ccc;
+	width: 960px;
+	margin: 0px auto 0px auto;
+	padding: 20px 0px 20px 0px;
+}
+
+.chart {
+	width: 480px;
+}
+.lol {
+	font-size: 16px;
+	color: #888;
+	font-style: italic;
+}
+.sep {
+	height: 1px;
+	width: 100%;
+	background: #999;
+	margin: 20px 0px 20px 0px;
+}
+.footer{
+	font-size: 16px;
+}
+.latex {
+	width: 100%;
+}
+
+.latex img {
+	display: block;
+	margin: 0px auto 0px auto;
+}
+
+pre {
+	font-family: 'Droid Sans Mono';
+	font-size: 14px;
+}
+
+table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+table td img {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#contents a {
+}
+</style>
+<script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+</script>
+</head>
+<body>
+<div id="header" >
+<div id="headersub">
+<h1>Kun Cao</h1>
+</div>
+</div>
+<div class="container">
+
+<h2> Project 3 / Camera Calibration and Fundamental Matrix Estimation with RANSAC</h2>
+
+
+<p> 	The goal of this project is to explore camera and scene geometry. Throughout this project
+I will compute the projection matrix that transforms 3D coordinates to 2D, obtain camera coordinates, estimate
+the fundamental matrix, and ultimately use RANSAC to find the "best" Fundamental Matrix. Ultimately, the objective
+is to obtain greater accuracy when matching features between images 2 images.</p>
+
+<ol>
+<li>Part 1: Camera Projection Matrix</li>
+<li>Part 2: Fundamental Matrix Estimation</li>
+<li>Part 3: Fundamental Matrix with RANSAC</li>
+<li>Part 4: Conclusion and Analysis</li>
+</ol>
+
+
+
+<div style="clear:both">
+<h3>Part 1: Camera Projection Matrix</h3>
+
+<p>	For the first part of the project, I used Method 2 which utilizes nonhomogeneous linear
+systems to solve for the unknown camera parameters. I first implemented Matrix A as demonstrated in image 1 as well
+as matrix b (which is the 2D points flattened). Then I used linalg.lstsq() to solve for the equation using linear
+least squares. The resulting array of length 11 is then appended with a '1' and reshaped into a (3,4) matrix to
+avoid a solution of all 0s.</p>
+
+<div style="float: bottom;">
+<img src="reportpictures/image1.png" width="50%" height="60%"/>
+<p style="font-size: 14px">Image 1: Method 2 Solving for m's entries using linear least squares</p>
+</div>
+
+<p>	Subsequently to verify my calculate_projection_matrix(), I compared it to the given scaled equivalent
+matrix provided by the project. In image 2, the projected points using my projection matrix closely
+matched that of the actual points with a small residual of 0.044535, demonstrating that the projection matrix is performing as intended.</p>
+
+<div style="float: bottom;">
+<img src="reportpictures/projectionMatrixEst.png" width="40%" height="16%"/>
+</div>
+
+<div style="float: bottom;">
+<img src="reportpictures/image2.png" width="50%" height="60%"/>
+<p style="font-size: 14px">Image 2: Verifying Projection Matrix</p>
+</div>
+
+
+
+<p>Because I have extracted the projection matrix M, it is now possible to extract the camera center by using
+the equation:     (-Q^-1)m_4 where Q is M[0:3,0:3] and m_4 is the fourth column of the projection matrix.</p>
+
+<div style="float: bottom;">
+<img src="reportpictures/image3.png" width="50%" height="60%"/>
+<p style="font-size: 14px">Image 3: Estimated Location of Camera</p>
+</div>
+
+<div style="clear:both">
+
+<h3>Part 2: Fundamental Matrix Estimation</h3>
+
+<p> Similar to Part 1, Part 2 estimates a fundamental matrix with given 2d coordinates from 2 images. Before,
+attempting to estimate the matrix, I first needed to normalize the points; this was done by
+first taking the mean of 'u' and 'v' and then subtracting them to the 'u's and 'v's of the matrix. Subsequently,
+the scale is determined by taking the reciprocal of the standard deviation of this subtracted matrix. The norm
+is the resulting product of the mean subtracted matrix and the scale. Furthermore, a Transform matrix is also returned
+in my normalizePoints() which is demonstrated in image 4. </p>
+
+<div style="float: bottom;">
+<img src="reportpictures/image4.png" width="20%" height="15%"/>
+<p style="font-size: 14px">Image 4: Transform Matrix where s denotes scale and -c denotes means of u and v</p>
+
+<p>Next, in order to estimate the fundamental matrix, I utilized the equation in image 5. Again I implemented
+matrix A, and solved for the fundamental matrix using np.linalg.lstsq(). This resulted in a array length of 8 which
+I appended a 1 similar to part 1. Finally, I reshaped the array into a (3,3). Because the resulting fundamental
+matrix is full rank and needed to be a rank 2, I used SVD to decompose the matrix and set the smallest value in
+S to 0. I recombined this matrix by U @ S_new @ Vh then scaled my coordinates using my Transform Matrices 
+for point a and point b. The estimated matrix is provided below:</p>
+
+
+<div style="float: bottom;">
+<img src="reportpictures/estimatedMatrix.png" width="38%" height="10%"/>
+<p style="font-size: 14px">Image 5: Eight-Point Algorithm Ax = -1</p>
+
+<div style="float: bottom;">
+<img src="reportpictures/image5.png" width="50%" height="60%"/>
+<p style="font-size: 14px">Image 5: Eight-Point Algorithm Ax = -1</p>
+
+<div style="float: bottom;">
+<img src="reportpictures/image6.png" width="20%" height="10%"/>
+<p style="font-size: 14px">Image 6: Scaling the Coordinates</p>
+
+<p>Testing my algorithm, the images with epipolar lines were produced below. It appears that every feature point
+is intersected by at least one epipolar line.</p>
+
+<div style="float: bottom;">
+<img src="reportpictures/epipolar1.png" width="50%"/>
+<div style="float: bottom;">
+<img src="reportpictures/epipolar2.png"  width="50%"/>
+
+<p>Below are the epipolar lines generated with non norm coordinates. While the epipolar lines again passes through
+all the points, there are subtle differences where the lines are less centered to each intersection which may
+be more prone to errors.</p>
+
+<div style="float: bottom;">
+<img src="reportpictures/nonNorm2.png" width="50%"/>
+<div style="float: bottom;">
+<img src="reportpictures/nonNorm.png"  width="50%"/>
+
+
+<h3>Part 3: Fundamental Matrix with RANSAC</h3>
+
+<p>For the final part of the project, I implemented RANSAC which essentially computes a "best" fundamental matrix
+by using randomly matched elements. After 'n' iterations the fundamental matrix that produced the most number of total inliers
+is deemed the best fundamental matrix. I tried thresholds ranging from .001 to 1 and found that .005 seem to have
+produced the best results along with an iteration of 2000. The following results were produced: </p>
+
+
+
+<p> The Image below for notre dame is produced by using non-norm coordinates when generating the fundamental matrix.
+Although on a broad basis, there are a lot of accurate points, it is evident that there are a lot more mismatches compared
+to the notre dame images further below using normalized coordinates. Both are generated with an error threshold of .005 and 2000
+iterations.
+</p>
+
+<table border=1>
+<tr>
+<td>
+<img src="reportpictures/notreDameNonNorm.png" width="50%"/>
+<img src="reportpictures/notreDameNonNormEp1.png"  width="22%"/>
+<img src="reportpictures/notreDameNonNormEp2.png"  width="20%"/>
+</td>
+</tr>
+</table>
+
+
+<p>Below are images generated with .005 thresholds with normalized points:</p>
+
+<table border=1>
+<tr>
+<td>
+<img src="reportpictures/notreDame.png" width="50%"/>
+<img src="reportpictures/notreDameEp1.png"  width="22%"/>
+<img src="reportpictures/notreDameEp2.png"  width="20%"/>
+</td>
+</tr>
+</table>
+
+
+
+<table border=1>
+<tr>
+<td>
+<img src="reportpictures/gaudi.png" width="50%"/>
+<img src="reportpictures/gaudiEp1.png"  width="22%"/>
+<img src="reportpictures/gaudiEp2.png"  width="20%"/>
+</td>
+</tr>
+</table>
+
+<table border=1>
+<tr>
+<td>
+<img src="reportpictures/rush.png" width="50%"/>
+<img src="reportpictures/rushEp1.png"  width="22%"/>
+<img src="reportpictures/rushEp2.png"  width="20%"/>
+</td>
+</tr>
+</table>
+
+<table border=1>
+<tr>
+<td>
+<img src="reportpictures/wood.png" width="50%"/>
+<img src="reportpictures/woodEp1.png"  width="22%"/>
+<img src="reportpictures/woodEp2.png"  width="20%"/>
+</td>
+</tr>
+</table>
+<p>Below are images generated with .05 thresholds:</p>
+
+
+<table border=1>
+<tr>
+<td>
+<img src="reportpictures/notreDamehe.png" width="50%"/>
+<img src="reportpictures/notreDameheEp1.png"  width="22%"/>
+<img src="reportpictures/notreDameheEp2.png"  width="20%"/>
+</td>
+</tr>
+</table>
+
+<table border=1>
+<tr>
+<td>
+<img src="reportpictures/gaudihe.png" width="50%"/>
+<img src="reportpictures/gaudiheEp1.png"  width="22%"/>
+<img src="reportpictures/gaudiheEp2.png"  width="20%"/>
+</td>
+</tr>
+</table>
+
+<table border=1>
+<tr>
+<td>
+<img src="reportpictures/rushhe.png" width="50%"/>
+<img src="reportpictures/rushheEp1.png"  width="22%"/>
+<img src="reportpictures/rushheEp2.png"  width="20%"/>
+</td>
+</tr>
+</table>
+
+<table border=1>
+<tr>
+<td>
+<img src="reportpictures/woodhe.png" width="50%"/>
+<img src="reportpictures/woodheEp1.png"  width="22%"/>
+<img src="reportpictures/woodheEp2.png"  width="20%"/>
+</td>
+</tr>
+</table>
+
+<h3>Conclusion and Analysis:</h3>
+
+<p>All in all, using epipolar lines in project 3, appears to have significantly achieved a higher accuracy for matching
+in comparison to project 2; this was mainly attributed to the use of epipolar lines. Epipolar lines
+constrains the search for an image point in image 1 to a corresponding point in image 2 from 2D to 1D. Matches
+now had to correspond to an epipolar line or they are thrown out which significantly reduces the
+number of spurious results if the epipoles are generated correctly. After completing
+the algorithm, I tested multiple thresholds with different number of 'training' iterations. Decreasing
+the threshold, I saw much more accurate matches but very few inliers. By increasing
+the threshold, the algorithm produced much more matches but with more outliers as well. This was 
+because the "best" 
+fundamental matrix produced from the RANSAC algorithm had a greater tolerance to the distance.</p>
+
+
+
+</div>
+</body>
+</html>

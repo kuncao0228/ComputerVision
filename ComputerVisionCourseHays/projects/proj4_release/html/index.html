@@ -1,0 +1,294 @@
+<html>
+<head>
+<title>Computer Vision Project</title>
+<link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" title="Default" href="styles/github.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+
+<link rel="stylesheet" href="highlighting/styles/default.css">
+<script src="highlighting/highlight.pack.js"></script>
+
+<style type="text/css">
+body {
+	margin: 0px;
+	width: 100%;
+	font-family: 'Crimson Text', serif;
+	font-size: 20px;
+	background: #fcfcfc;
+}
+h1 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 28px;
+	margin: 25px 0px 0px 0px;
+	text-transform: lowercase;
+
+}
+
+h2 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 32px;
+	margin: 15px 0px 35px 0px;
+	color: #333;
+	word-spacing: 3px;
+}
+
+h3 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 26px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+h4 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+
+h5 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 18px;
+	margin: 10px 0px 10px 0px;
+	color: #111;
+	word-spacing: 2px;
+}
+
+p, li {
+	color: #444;
+}
+
+a {
+	color: #DE3737;
+}
+
+.container {
+	margin: 0px auto 0px auto;
+	width: 1160px;
+}
+
+#header {
+	background: #333;
+	width: 100%;
+}
+
+#headersub {
+	color: #ccc;
+	width: 960px;
+	margin: 0px auto 0px auto;
+	padding: 20px 0px 20px 0px;
+}
+
+.chart {
+	width: 480px;
+}
+.lol {
+	font-size: 16px;
+	color: #888;
+	font-style: italic;
+}
+.sep {
+	height: 1px;
+	width: 100%;
+	background: #999;
+	margin: 20px 0px 20px 0px;
+}
+.footer{
+	font-size: 16px;
+}
+.latex {
+	width: 100%;
+}
+
+.latex img {
+	display: block;
+	margin: 0px auto 0px auto;
+}
+
+pre {
+	font-family: 'Droid Sans Mono';
+	font-size: 14px;
+}
+
+table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+table td img {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#contents a {
+}
+</style>
+<script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+</script>
+</head>
+<body>
+<div id="header" >
+<div id="headersub">
+<h1>Kun Cao</h1>
+</div>
+</div>
+<div class="container">
+
+<h2> Project 4: Scene recognition with bag of words</h2>
+
+
+<p>The goal of this project is to explore various of methods of image recognition. Throughout this report I will first compare simplistic methods such
+as using tiny images with KNN and then move on to advanced methods using bags of sift features and linear
+classifiers through support vector machines. Ultimately, I will explore various hyper parameters and evaluate their 
+performance based on accuracies obtained by the confusion matrix and run time. The report is broken
+down into the following topics:</p>
+
+<ol>
+<li>Tiny Images and 1-NN</li>
+<li>Bag of SIFT and KNN</li>
+<li>Bag of SIFT and SVM</li>
+<li>Conclusion & Analysis</li>
+<li>Extra Credit</li>
+
+</ol>
+
+<h3>Tiny Images and 1-NN</h3>
+
+<p>For the first part of the project, I designed an algorithm to create mini images by iterating the original images using  sliding windows based on the length and width of the images divided by 16 and then took the center pixel. As a result, these images were converted into
+size 16x16 images. Next I used 1-NN to determine the nearest training example using L2 distance to assign the test case the label that is closest to that training example. The resulting Confusion Matrix was generated with an accuracy of 27.33% while randomly
+guessing only yields 7%. This was somewhat impressive considering the easiness of the implementation and the run-time of only being a few seconds.</p>
+
+
+<div style="float: bottom; padding">
+<img src="images/mini_image.png" width="40%" height="60%" />
+</div>
+
+<div style="clear:both">
+
+
+<h3>Bag of SIFT and KNN</h3>
+
+<p>For the next part of the project, I implemented build_vocabulary(). For this method, I iterated through the images and used vlfeat.sift.dsift() with a window size of 16, step size of 8 and 'FAST' to obtain the features in an image. I then appended these sift features into an array of size N X 128 where N is the number of sift features in all the images. I then called vlfeat.kmeans.kmeans() to generate my cluster_centers which are my resulting vocabs. I have generated vocab.pkl files for sizes 10, 20, 50, 100, 200, 400, 1000, and 
+attempted 10,000 (could not finish after 10hrs of running). There is a dramatic increase of run-time as the number of vocabs increased.</p>
+
+<p>Next, I created bags of sift features by iterating through the images, then returning assignments using kmeans_quantize() on
+sift descriptors from the image. Next I filled the histogram with a bin size equivalent to the vocab size with the returned assignments. The histogram was then normalized by dividing the norm of itself since each image had a different size of features.</p>
+
+
+<p> In order to obtain the optimal value of K and vocab size for the highest performance accuracy, I used cross validation by
+separating a 100 sized validation set from the 1500 training set and used a newly sized training set of 1400 that does not 
+contain values of the validation set. I then regenerated the vocabs that is correspondent to this new 1400 training size. I repeated this for 15 iterations and recorded the average accuracy and average
+standard deviation. The graphs below represents this data.</p>
+
+<div style="float: bottom; padding">
+<img src="images/KNNAccuracy.png" width="40%" height="45%" />
+<img src="images/KNNSTD.png" width="40%" height="45%" />
+</div>
+
+<p> According to my cross validation data, there seems to be a general correlation of increased accuracy as the number
+of vocabs increased; however, there does not seem to be an increase of performance from 400 vocabs to 1000 vocabs. Furthermore,
+there also appears to be increased performance as the value of K increased but seems to plateau
+roughly around 6-8. For the standard deviation, there seems to be an initial increase then a fall-off as the value of K increases; 
+however, there does not appear to be a relationship with the number of vocabs and standard deviation. Based on my analysis
+with cross validation, I chose a K value of 7 with a vocab size of 400 since it is a median in terms of standard deviation and appears to have high accuracy from the cross validation.</p>
+
+<p>Using this approach, I was able to produce the following Confusion Matrix by training with the original train data and testing it
+on the test data</p>
+
+<div style="float: bottom; padding">
+<img src="images/OptimizedKNN.png" width="40%" height="60%" />
+</div>
+
+<h3>Bag of SIFT and SVM</h3>
+
+<p> For the next part of the project, I implemented svm_classify() which essentially trains a set of 1-vs-all linear
+SVMs that operate using the bag of SIFT implemented in part 2. In order to achieve this, I first created
+a training set using a binary_matrix that is of size C x T where C is the number of unique categories and T
+is the number of training labels. Binary_matrix is initialized with 0s. I then iterated through each of the train labels for
+every category. If the train label element and category is equal, I set the value of binary_matrix to 1. This 
+essentially creates training sets that denote for example is this image a 'Kitchen' ? or is it NOT a 'Kitchen'. Finally,
+I passed the train image features with every row element of my binary_matrix to the .fit() for every svm and recorded
+their distances using svm.coef_@test_image_feats[element] + svm.intercept_ in a distance matrix sized C x length(Test_Images)
+and ultimately returned the index of the max element for across axis = 0.</p>
+
+<p> Again, similar to part 2, I performed cross validation using 15 iterations for the SVM using different values of
+the penaulty parameter, C along with different vocab sets for each set of 1400 training data. The graphs below were generated as a result.</p> 
+
+<div style="float: bottom; padding">
+<img src="images/SVMAccuracy.png" width="40%" height="45%" />
+<img src="images/SVMSTD.png" width="40%" height="45%" />
+</div>
+
+<p> Again, Accuracy seems to increase as the number of vocabs increased, however this time, 1000 vocabs
+was able to surpass the accuracy of 400 vocabs. Furthermore, as the value of C increased, the accuracy seems to have
+slightly decreased. For the standard deviation graph, the standard deviation shows decrease as C is increased with
+no correlation for the number of vocabs. All in all, I produced a SVM confusion matrix both for the 400 vocab and 1000 vocab
+using the orignial training and test set to draw a comparison to K-NN and to see the highest possible precision using my methods.
+</p>
+
+<div style="float: bottom; padding">
+<img src="images/OptimizedSVM400.png" width="40%" height="60%" />
+<img src="images/OptimizedSVM1000.png" width="40%" height="60%" />
+</div>
+
+<p> As a result, both SVM matrices performed significantly better than K-NN with the 1000 vocab words only
+slightly outperforming the 400 vocab words model by .8%</p>
+
+
+
+<h3>Conclusion & Analysis</h3>
+
+<p>I was rather amazed how successful the algorithms were at being able to classify rooms purely using sift features
+without having to recognize individual objects within the pictures. 
+It is apparent through the graphs I've generated using cross validation that the accuracy
+percentage increases as the number of vocabs increased. This makes sense, because as the size
+of the vocabs increased in respect to the number of sift features generated from training images, it was essentially creating
+a cluster that is geared towards fitting less sift features which will eventually cause overfitting. Furthermore,
+it was interesting to see that the variance to be less affected by the number of vocabs but rather correlated
+with the K value and the C value for SVM. What is evident is that as the value of K and C increased,
+the standard deviations began to converge between the different vocabulary
+sets. But upon closer inspection, it appears that for individual vocab instances, as the accuracy decreased,
+the standard deviation decreased at intervals of C as well as K. My guess is that this is related to the bias-variance
+tradeoff where a lower bias usually brings a higher variance and vice versa.  I chose
+to tune C over tol because according to the Linear SVC documentation, C is the penulty parameter that is used
+to set the amount of regularization. Therefore I believe C will have the greatest effect towards accuracy. From the graphs 
+it is apparent that as C increases, there were slight decreases in respective accuracy.</p>
+
+<p>Subsequently, time was a major component for this project. It was interesting to see that SVM has outperformed
+K-NN given the longer query times for K-NN. The reason for these long query times for K-NN is probably attributed
+towards it having to calculate distances for each feature to all of its neighbors and then ranking them to classify
+the feature. Cross validation helped since the testing set only composed of a set of 100
+which allowed me to discover optimal hyper parameters faster while also being able to evaluate predictive
+performance of the two algorithms prior to using the actual training data.</p>
+
+<h3>Extra Credit</h3>
+
+ 
+
+<p>For Extra Credit I explored a number of K values for KNN as demonstrated in part2. The method on determining ties 
+is to just pick the first category that is seen the most that was first encountered (the method is called
+getMostOccuringWord()) Furthermore, I also
+found features using GMM and Fisher methods named getGMMClusters and getFisherFeats. I've essentially replaced the vocab generation used in the original project
+by using the vlfeat.gmm.gmm function by iterating through the images with various cluster sizes of 10, 20, 50 and
+100, 200, and 400. Similar to part 3, as the number of clusters increased, the accuracy increased upwards to
+the high 70%'s. The algorithm works by generating the mean, covariance, and priors using the training images and by using Fisher via the
+vlfeat.fisher.fisher method to find the features again iterating every image. The best accuracy I was able to find 
+was using the 400 sized clusters. The matrix is provided below</p>
+
+<div style="float: bottom; padding">
+<img src="images/fisherSVM.png" width="40%" height="60%"/>
+</div>
+
+
+
+
+</div>
+</body>
+</html>

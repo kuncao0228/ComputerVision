@@ -1,0 +1,379 @@
+<html>
+<head>
+<title>Computer Vision Project</title>
+<link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" title="Default" href="styles/github.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+
+<link rel="stylesheet" href="highlighting/styles/default.css">
+<script src="highlighting/highlight.pack.js"></script>
+
+<style type="text/css">
+body {
+	margin: 0px;
+	width: 100%;
+	font-family: 'Crimson Text', serif;
+	font-size: 20px;
+	background: #fcfcfc;
+}
+h1 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 28px;
+	margin: 25px 0px 0px 0px;
+	text-transform: lowercase;
+
+}
+
+h2 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 32px;
+	margin: 15px 0px 35px 0px;
+	color: #333;
+	word-spacing: 3px;
+}
+
+h3 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 26px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+h4 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+
+h5 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 18px;
+	margin: 10px 0px 10px 0px;
+	color: #111;
+	word-spacing: 2px;
+}
+
+p, li {
+	color: #444;
+}
+
+a {
+	color: #DE3737;
+}
+
+.container {
+	margin: 0px auto 0px auto;
+	width: 1160px;
+}
+
+#header {
+	background: #333;
+	width: 100%;
+}
+
+#headersub {
+	color: #ccc;
+	width: 960px;
+	margin: 0px auto 0px auto;
+	padding: 20px 0px 20px 0px;
+}
+
+.chart {
+	width: 480px;
+}
+.lol {
+	font-size: 16px;
+	color: #888;
+	font-style: italic;
+}
+.sep {
+	height: 1px;
+	width: 100%;
+	background: #999;
+	margin: 20px 0px 20px 0px;
+}
+.footer{
+	font-size: 16px;
+}
+.latex {
+	width: 100%;
+}
+
+.latex img {
+	display: block;
+	margin: 0px auto 0px auto;
+}
+
+pre {
+	font-family: 'Droid Sans Mono';
+	font-size: 14px;
+}
+
+table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+table td img {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#contents a {
+}
+</style>
+<script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+</script>
+</head>
+<body>
+<div id="header" >
+<div id="headersub">
+<h1>Kun Cao</h1>
+</div>
+</div>
+<div class="container">
+
+<h2> Project 4: Scene recognition with bag of words</h2>
+
+
+
+<p>	For this project, I trained a SVM classifier to detect faces by creating a training set
+of small window images that contain faces and another negative training set of small
+images that do not contain any faces. Ultimately, I used a sliding window technique on
+test images to identify faces in the image through bounding boxes. This report
+is broken down to the following parts:</p>
+
+<ol>
+<li>Load Positive and Negative Training Crops</li>
+<li>Train and Evaluate Classifier</li>
+<li>Mine Hard Negatives</li>
+<li>Multi Scale Test Results</li>
+<li>Analysis & Extra Credit</li>
+</ol>
+
+
+<h2>Load Positive and Negative Training Crops</h2>
+<p>For the positive training set, I iterated through all the images in the train_path_pos directory
+and appended the hog features found using vlfeat.hog.hog() with the default cell size of 6. This
+resulted in a final array of N x D where N is the number of image samples and D is equivalent to
+the (template_size/cell_size)^2 * 31 which in this case is 6713 x 1116.
+</p>
+
+<p>For the negative training set, I took the image names of all images in the non_face_scn_path
+directory and threw them into an array. Next I generated a list of random indices that is bounded
+by num_samples. Furthermore, for every random index, I generated a random
+bounding box of the size 36 and took the hog feature of this sub_image and appended it to my feature array.
+Finally, I put a size restriction on the image size of where I am grabbing my random samples
+because I noticed this was able to improve the accuracy
+of my results. The features grabbed from the smaller image had less
+distinct features and were less defined; removing them improved my baseline accuracy. In the end, an array of N x D again is generated where
+N is bounded by the num_samples and D is equal to the D from the positive training features.</p>
+
+<h2>Train and Evaluate Classifier</h2>
+
+<p>With my training data now created, I was now able to train my LinearSVC classifier. I appended
+the positive features with the negative features and created a label array with the size of
+the number of positive features using 1 appended with the size of the negative features with
+-1. I tested my SVM with multiple C values. I found that a higher C actually improved the
+accuracy of my SVM.</p>
+
+<table style="width:100%">
+  <tr>
+    <th>C</th>
+    <th>Accuracy</th> 
+  </tr>
+  <tr>
+    <td>1e-5</td>
+    <td>60.514%</td>
+  </tr>
+  <tr>
+    <td>1e-4</td>
+    <td>97.741%</td>
+  </tr>
+  <tr>
+    <td>1e-3</td>
+    <td>99.171%</td>
+  </tr>
+  <tr>
+    <td>1e-2</td>
+    <td>99.641%</td>
+  </tr>
+    <tr>
+    <td>1e-1</td>
+    <td>99.859%</td>
+  </tr>
+    <tr>
+    <td>1</td>
+    <td>100%</td>
+  </tr>
+</table>
+
+<p>Because a C value of 1 was most likely overfitting and I was getting convergence warnings,
+I decided to use a C of 1e-1. The following confidences were produced as a result along with
+a visualization of the hog features which resembles a face.</p>
+
+
+
+
+
+
+<img src="images/hog_im1.png" width="35%" height="50%"/>
+<img src="images/hog_im2.png" width="35%" height="50%"/>
+<img src="images/confidences.png" width="35%" height="50%"/>
+
+<p> As seen from the above graph, a confidence level above -2 had a chance of being
+classified as a face. This will help later to determine threshold for my project.</p>
+
+
+<h3>Mine Hard Negatives</h3>
+
+<p>Similar to mine random negatives, I again found a list of random features from the non_face_scn_path.
+But this time I wanted to return features that returned false positives classifications, meaning predictions that classified
+non faces as faces. In order to do this, I took the confidences of the hog features using the svm.decision_function().
+Anytime the prediction was greater than 0 (since from the confidence graph we can see that faces had a confidences of greater
+than 0) and the prediction did not equal the label_vector element I had a false_positive classification feature. Using
+10000 random images roughly generates 5-18 hard negatives which roughly corresponds to the false negative rate determined
+from the previous part of the report of .068%.</p>
+
+<p> Adding the hard negatives to the original training set and retraining another svm yielded almost the exact accuracy 
+across the board for all C values. In this case it yielded a slightly lower negligable accuracy of 99.835% for
+the 1e-1 C value.</p>
+
+<img src="images/svm2.png" width="35%" height="20%"/>
+
+
+<h3>Multi Scale Test Results</h3>
+<p>For this part of the project I implemented run_detector. I first loaded all the images in grayscale
+for all images in the test directory. I then iterated through sub_images in the image using a step size
+of 9 (mainly because at step 6, the code was taking too long to run and anything above 11ish, I am sacrificing a lot
+of recall) and created hog features of the sub image and appended them in an array along with a separate
+array that stored the x and y coordinates of the sub image. I repeated this step for
+all scales that decremented by .9 of the previous scale. The coordinates of the bounding box were also handled by dividing
+the coordinate by the current scale. Ultimately, confidences were found for all features of the current
+image and sorted. The confidences below the threshold -1.5 were removed (which are non-faces) and the top 500 values were passed to the non_max_supression equation to remove
+duplicate values and finally valid boxes were returned. The following precision and recall graphs were generated with
+.9 to .9^17 scales:</p>
+
+<img src="images/prec_1e-1.png" width="35%" height="50%"/>
+<img src="images/viola_prec_1e-1.png" width="35%" height="50%"/>
+
+<p> The hard negatives graphs are below which demonstrate a higher
+precision compared to random negatives above</p>
+<img src="images/prec_1e-1hn.png" width="35%" height="50%"/>
+<img src="images/viola_prec_1e-1hn.png" width="35%" height="50%"/>
+
+<p>The average precision was slightly higher for the hard negative SVM despite
+the svm_2 being of slightly less accurate than the base svm.
+Using Multiple Scales greatly improved precision and recall from a single scale demonstrated below:</p>
+
+<img src="images/single_scale.png" width="35%" height="50%"/>
+<img src="images/single_scalehn.png" width="35%" height="50%"/>
+
+<p>I believe the 'topk' parameter had a huge impact on the recall parameter because
+at lower values of 'topk', just not enough faces were being detected which returned low recall values. This is demonstrated
+in the graphs below for 'topk' values of 15, 50, and 100 for the base svm model.</p>
+
+
+<img src="images/topk15.png" width="35%" height="50%"/>
+<p style="font-size: 14px">15 topk C val</p>
+
+
+
+<img src="images/topk50.png" width="35%" height="50%"/>
+<p style="font-size: 14px">50 topk C val</p>
+
+
+
+<img src="images/topk100.png" width="35%" height="50%"/>
+<p style="font-size: 14px">100 topk C val</p>
+
+
+
+
+<p>Meanwhile, varying C values of SVM greatly affected precision of the classfier.</p>
+
+
+<img src="images/1e-2.png" width="35%" height="50%"/>
+<p style="font-size: 14px">1e-2 C val</p>
+
+
+<img src="images/1e-3.png" width="35%" height="50%"/>
+<p style="font-size: 14px">1e-3 C val</p>
+<img src="images/1e-4.png" width="35%" height="50%"/>
+<p style="font-size: 14px">1e-4 C val</p>
+<img src="images/1e-5.png" width="35%" height="50%"/>
+<p style="font-size: 14px">1e-5 C val</p>
+
+
+
+<p>Lastly, different number of .9^n scales affected the recall</p>
+
+<img src="images/scale5.png" width="35%" height="50%"/>
+<p style="font-size: 14px">5 scales</p>
+
+
+<img src="images/scale10.png" width="35%" height="50%"/>
+<p style="font-size: 14px">10 scales</p>
+<img src="images/scale15.png" width="35%" height="50%"/>
+
+<p style="font-size: 14px">15 scales</p>
+
+
+<h3>Analysis & Extra Credit</h3>
+
+<p>For Extra Credit, I increased the number of training samples by flipping the images by reflecting it through
+the vertical axis. My reasoning is that flipping a face across is still a face but the features are distinct enough
+that it could potentially provide additional useful information for the SVM. I created
+a method called generateFlippedPositives() which essentially iterates the images in the
+train_path_pos dir and iteratively exchange the column values for every row. .JPG files as
+a result were saved in the new directory. Ultimately, an additional 6713 training sample was created. The SVM
+accuracy proved to be similar in terms of accuracy but mainly because the original base svm's accuracy was
+already so high. The precision and recall accuracy however was increased.</p>
+
+<img src="images/EC_base.png" width="35%" height="50%"/>
+<img src="images/EC_hardNeg.png" width="35%" height="50%"/>
+
+<p>My main takeaway for this project was that overall accuracy of a model can be improved by either precision,
+recall, or both. However, there comes to a point where you're sacrificing precision by attempting to increase
+recall or you're sacrificing recall in an attempt to increase precision. The primary method that I used to
+increase precision was by tuning the C parameter in the SVM classifier. The C parameter
+controls the degree of misclassification of the model. Smaller values of C will cause the optimizer to
+look for a larger-margin that separates the hyperplane at the expense of the plane misclassifying more points. 
+Furthermore, the threshold also contributes towards the precision of a model. Upon visualizing the graph of the SVM
+where confidences > 0 tend to be classification of faces, the higher I set the threshold, the higher chance
+that the bounding boxes are more likely to be faces; of course at the expense of less features. </p>
+
+<p>Subsequently, recall was mainly controlled by the number of topk values, number of scales, and the size of the window and step size when
+searching for the features in the test images. Through different number of scales, more smaller faces were
+able to be picked up by the sliding windows. By increasing the topk value, more boxes were passed into the non_maxima_suppression algorithm to be considered. This could greatly improve the number of recall if
+a particular high confidence face in an image is being detected on multiple scales which would 'eat up' all
+the topk array spaces that are being considered. Meanwhile, decreasing the step-size and window-size would 
+greatly improve the number of features to be considered in an image but at the expense of very long run-time; of course,
+topk would most likely have to be increased to handle the increase inflow of features.</p>
+
+<p>Furthermore by adding 'hard' negatives into the training sample helps the SVM by specifically targeting features that
+could potentially be misclassified. Because of the low rate of false positives for this
+project, the downside of doing this is training time. When finding hard negatives, I had to loop over 10000 random
+samples to find only 5-20 false positive features. </p>
+
+<p>Lastly, I ran my algorithm on the classroom test data to produce the results below. My project was able
+to perform well on the larger images. For smaller images, it was finding too many false positives. I believe this
+is due to the size of my 36 window. The accuracy may be improved if I used a smaller window. Due to the size
+constraint of 5MB for this project, I was only able to present one of my findings, a class image with too many
+false positives.</p>
+
+<img src="images/bad_class.png" width="38%" height="30%"/>
+
+
+
+
+</body>
+</html>
